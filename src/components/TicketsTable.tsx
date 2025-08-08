@@ -5,7 +5,7 @@ export default function TicketsTable({ rows }: { rows: Ticket[] }) {
     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
       <thead>
         <tr>
-          {['#','Subject','Description','Student','Date','Status'].map(h => (
+          {['#','נושא','תיאור','סטודנט','תאריך','סטטוס'].map(h => (
             <th key={h} style={{borderBottom:'1px solid #ddd', textAlign:'start', padding:'8px'}}>{h}</th>
           ))}
         </tr>

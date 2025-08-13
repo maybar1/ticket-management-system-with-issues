@@ -8,6 +8,7 @@ export default class Ticket {
   date: string; // dd/mm/yyyy
   status: TicketStatus;
 
+  // Create a new Ticket class
   constructor(
     id: number,
     subject: string,

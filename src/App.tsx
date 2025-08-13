@@ -1,6 +1,20 @@
 import Header from './components/Header';
 import Footer from './components/Footer';
 import TicketsTable from './components/TicketsTable';
+ main
+import UsersTable from './components/UsersTable';
+import { tickets } from './data/tickets';
+
+export default function App() {
+  return (
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: 16 }}>
+      <Header />
+
+      <h2 style={{ margin: '16px 0' }}>Users</h2>
+      <UsersTable />
+
+      <h2 style={{ margin: '16px 0' }}>Tickets</h2>
+
 import { tickets as seedTickets } from './data/tickets';
 import Ticket from './models/Ticket';
 import { useEffect, useState } from 'react';
@@ -48,7 +62,9 @@ return (
 
       </div>
 
+ main
       <TicketsTable rows={tickets} />
+
       <Footer />
     </div>
   );

@@ -29,6 +29,14 @@ export default function App() {
     setTickets(prev => [Ticket.random(nextId), ...prev]);
   }
 
+  // Function for the button click
+  function saveToLocalStorage() {
+  localStorage.setItem(LS_KEY, JSON.stringify(tickets));
+  console.log('Saved to localStorage manually');
+  alert('Saved to localStorage');
+}
+
+
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: 16, direction: 'rtl' }}>
       <Header />
@@ -36,6 +44,7 @@ export default function App() {
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button onClick={addRandom}>➕ הוסף פנייה אקראית</button>
+        <button onClick={saveToLocalStorage}>Save to localStorage</button>
       </div>
 
       <TicketsTable rows={tickets} />

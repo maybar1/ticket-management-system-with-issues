@@ -1,4 +1,4 @@
-import type { Ticket } from '../data/tickets';
+import type Ticket from '../models/Ticket';
 
 export default function TicketsTable({ rows }: { rows: Ticket[] }) {
   return (

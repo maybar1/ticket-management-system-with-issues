@@ -4,6 +4,11 @@ import TicketsTable from './components/TicketsTable';
 import { tickets as seedTickets } from './data/tickets';
 import Ticket from './models/Ticket';
 import { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Forms from './components/Forms.tsx';
+import Management from './components/Management.tsx';
+import Help from './components/Help.tsx';
+
 
 const LS_KEY = 'tickets:v1';
 
@@ -37,18 +42,38 @@ export default function App() {
 }
 
 
-  return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: 16, direction: 'rtl' }}>
-      <Header />
-      <h2 style={{ margin: '16px 0' }}>Tickets</h2>
+ return (
+  <div style={{ maxWidth: 960, margin: '0 auto', padding: 16, direction: 'rtl' }}>
+    <Header />
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <button onClick={addRandom}>➕ הוסף פנייה אקראית</button>
-        <button onClick={saveToLocalStorage}>Save to localStorage</button>
-      </div>
+    <Routes>
+      {/* דף הבית - Tickets */}
+      <Route
+        path="/"
+        element={
+          <>
+            <h2 style={{ margin: '16px 0' }}>Tickets</h2>
 
-      <TicketsTable rows={tickets} />
-      <Footer />
-    </div>
-  );
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <button onClick={addRandom}>➕ הוסף פניה אקראית</button>
+              <button onClick={saveToLocalStorage}>Save to localStorage</button>
+            </div>
+
+            <TicketsTable rows={tickets} />
+          </>
+        }
+      />
+
+      {/* עמודים נוספים */}
+      <Route path="/forms" element={<Forms />} />
+      <Route path="/management" element={<Management />} />
+      <Route path="/help" element={<Help />} />
+      
+    </Routes>
+
+    <Footer />
+  </div>
+);
+
+
 }

@@ -13,16 +13,20 @@ import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
-import ListSubheader from "@mui/material/ListSubheader";
 import Avatar from "@mui/material/Avatar";
 import HomeIcon from "@mui/icons-material/Home";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-import SettingsIcon from "@mui/icons-material/Settings";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
+import SchoolIcon from "@mui/icons-material/School";
+import GroupIcon from "@mui/icons-material/Group";
+import { ToggleButtonGroup } from "@mui/material";
+import ToggleButton from "@mui/material/ToggleButton";
 
+export type Role = "student" | "team";
+type HeaderProps = { role: Role; onRoleChange?: (r: Role) => void };
 
-export default function Header() {
+export default function Header({ role, onRoleChange }: HeaderProps) {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,17 +36,29 @@ export default function Header() {
     navigate(url);
     setOpen(false);
   };
-  const isActive = (to: string) => location.pathname === to || location.pathname.startsWith(to + "/");
-  const mainLinks = [
+  const isActive = (to: string) =>
+    location.pathname === to || location.pathname.startsWith(to + "/");
+
+  const studentLinks = [
     { text: "בית", to: "/", icon: <HomeIcon /> },
-    { text: "טפסים", to: "/forms", icon: <AssignmentIcon /> },
+    { text: "הפניות שלי", to: "/my", icon: <AssignmentIcon /> },
+    { text: "פנייה חדשה", to: "/NewTicket", icon: <AssignmentIcon /> },
+    { text: "עזרה", to: "/help", icon: <HelpOutlineIcon /> },
   ];
 
   const managementLinks = [
-    { text: "ניהול", to: "/management", icon: <SettingsIcon /> },
-   
+    { text: "בית", to: "/", icon: <HomeIcon /> },
+    { text: "פניות", to: "/tickets", icon: <AssignmentIcon /> },
+    { text: "עזרה", to: "/help", icon: <HelpOutlineIcon /> },
   ];
-  const helpLinks = [{ text: "עזרה", to: "/help", icon: <HelpOutlineIcon /> }];
+  const mainLinks = role === "student" ? studentLinks : managementLinks; // ✅ משמש ב-Drawer
+
+  const handleRoleToggle = (_: unknown, newRole: Role | null) => {
+    if (newRole) {
+      onRoleChange?.(newRole);
+    }
+  };
+
   return (
     <>
       <AppBar position="static">
@@ -52,20 +68,36 @@ export default function Header() {
             Ticket Management System
           </Typography>
 
+          {/* כפתור החלפת תפקיד */}
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={role}
+            onChange={handleRoleToggle}
+            sx={{ mr: 1 }}
+          >
+            <ToggleButton value="student">
+              <SchoolIcon fontSize="small" sx={{ mr: 0.5 }} />
+              סטודנט
+            </ToggleButton>
+            <ToggleButton value="team" aria-label="מנהל">
+              <GroupIcon fontSize="small" sx={{ mr: 0.5 }} />
+              מנהל
+            </ToggleButton>
+          </ToggleButtonGroup>
+
           {/* קישורי ניווט */}
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button color="inherit" component={RouterLink} to="/">
-              בית
-            </Button>
-            <Button color="inherit" component={RouterLink} to="/forms">
-              טפסים
-            </Button>
-            <Button color="inherit" component={RouterLink} to="/management">
-              ניהול
-            </Button>
-            <Button color="inherit" component={RouterLink} to="/help">
-              עזרה
-            </Button>
+            {mainLinks.map((l) => (
+              <Button
+                key={l.to}
+                color="inherit"
+                component={RouterLink}
+                to={l.to}
+              >
+                {l.text}
+              </Button>
+            ))}
           </Box>
 
           <IconButton
@@ -81,19 +113,26 @@ export default function Header() {
         </Toolbar>
       </AppBar>
       {/** Drawer*/}
-       <Drawer
+      <Drawer
         anchor="right"
         open={open}
         onClose={toggleDrawer}
-        sx={{ '& .MuiDrawer-paper': { width: 300, p: 1, backgroundImage: 'none' } }}
+        sx={{
+          "& .MuiDrawer-paper": { width: 300, p: 1, backgroundImage: "none" },
+        }}
       >
-      
         <Toolbar />
-        <Box sx={{ px: 2, pb: 1, display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Box
+          sx={{ px: 2, pb: 1, display: "flex", alignItems: "center", gap: 1.5 }}
+        >
           <Avatar sx={{ bgcolor: "primary.main" }}>TM</Avatar>
           <Box>
-            <Typography variant="subtitle1" fontWeight={700}>תפריט</Typography>
-            <Typography variant="caption" color="text.secondary">Ticket Management</Typography>
+            <Typography variant="subtitle1" fontWeight={700}>
+              תפריט
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {role === "student" ? "סטודנט" : "מנהל"}
+            </Typography>
           </Box>
         </Box>
         <Divider />
@@ -105,36 +144,16 @@ export default function Header() {
             "& .MuiListItemButton-root": { borderRadius: 2, mb: 0.5 },
             "& .Mui-selected": {
               bgcolor: "action.selected",
-              "&:hover": { bgcolor: "action.selected" }
-            }
+              "&:hover": { bgcolor: "action.selected" },
+            },
           }}
         >
-          {mainLinks.map(l => (
-            <ListItemButton key={l.to} selected={isActive(l.to)} onClick={() => handleNavigation(l.to)}>
-              <ListItemIcon sx={{ minWidth: 36 }}>{l.icon}</ListItemIcon>
-              <ListItemText primary={l.text} />
-            </ListItemButton>
-          ))}
-        </List>
-
-        <List
-          dense
-          subheader={<ListSubheader disableSticky>מסכי ניהול</ListSubheader>}
-          sx={{ px: 1, "& .MuiListItemButton-root": { borderRadius: 2, mb: 0.5 } }}
-        >
-          {managementLinks.map(l => (
-            <ListItemButton key={l.to} selected={isActive(l.to)} onClick={() => handleNavigation(l.to)}>
-              <ListItemIcon sx={{ minWidth: 36 }}>{l.icon}</ListItemIcon>
-              <ListItemText primary={l.text} />
-            </ListItemButton>
-          ))}
-        </List>
-
-        <Divider sx={{ my: 1 }} />
-
-        <List dense sx={{ px: 1 }}>
-          {helpLinks.map(l => (
-            <ListItemButton key={l.to} selected={isActive(l.to)} onClick={() => handleNavigation(l.to)}>
+          {mainLinks.map((l) => (
+            <ListItemButton
+              key={l.to}
+              selected={isActive(l.to)}
+              onClick={() => handleNavigation(l.to)}
+            >
               <ListItemIcon sx={{ minWidth: 36 }}>{l.icon}</ListItemIcon>
               <ListItemText primary={l.text} />
             </ListItemButton>

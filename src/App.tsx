@@ -1,18 +1,21 @@
-import Header from './components/Header';
+import Header, { type Role } from './components/Header';
 import Footer from './components/Footer';
 import TicketsTable from './components/TicketsTable';
 import { tickets as seedTickets } from './data/tickets';
 import Ticket from './models/Ticket';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Forms from './components/Forms.tsx';
-import Management from './components/Management.tsx';
-import Help from './components/Help.tsx';
+import NewTicket from './components/NewTicket';
+import Help from './components/Help';
 
 
 const LS_KEY = 'tickets:v1';
+const CURRENT_STUDENT_ID = '123456789';
+
 
 export default function App() {
+  const [role, setRole] = useState<Role>('student');
+
   const [tickets, setTickets] = useState<Ticket[]>(() => {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) {
@@ -41,39 +44,53 @@ export default function App() {
   alert('Saved to localStorage');
 }
 
+ const myTickets = useMemo(
+    () =>
+      tickets.filter((t: any) =>
+        typeof t?.studentId === 'string' ? t.studentId === CURRENT_STUDENT_ID : true
+      ),
+    [tickets]
+  );
 
  return (
   <div style={{ maxWidth: 960, margin: '0 auto', padding: 16, direction: 'rtl' }}>
-    <Header />
+    <Header role={role} onRoleChange={setRole} />
 
     <Routes>
-      {/* דף הבית - Tickets */}
       <Route
         path="/"
         element={
           <>
             <h2 style={{ margin: '16px 0' }}>Tickets</h2>
+           
+            {role === 'team' && (
+             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                  <button onClick={addRandom}>➕ הוסף פניה אקראית</button>
+                  <button onClick={saveToLocalStorage}>Save to localStorage</button>
+                </div>
+              )}
 
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <button onClick={addRandom}>➕ הוסף פניה אקראית</button>
-              <button onClick={saveToLocalStorage}>Save to localStorage</button>
-            </div>
+              <TicketsTable rows={tickets} />
+            </>
+          }
+        />
 
-            <TicketsTable rows={tickets} />
-          </>
-        }
-      />
+       {/* פניות (מנהל/צוות) */}
+        <Route path="/tickets" element={<TicketsTable rows={tickets} />} />
 
-      {/* עמודים נוספים */}
-      <Route path="/forms" element={<Forms />} />
-      <Route path="/management" element={<Management />} />
-      <Route path="/help" element={<Help />} />
-      
-    </Routes>
+        {/* הפניות שלי (סטודנט) */}
+        <Route path="/my" element={<TicketsTable rows={myTickets} />} />
 
-    <Footer />
-  </div>
-);
+        {/* פנייה חדשה (סטודנט) */}
+        <Route path="/NewTicket" element={<NewTicket />} />
+        {/* אליאס כדי שתיקים ישנים/קישורים ל-/forms ימשיכו לעבוד */}
+        <Route path="/forms" element={<NewTicket />} />
 
+        {/* קיימים אצלך (לא חייב בתפריט העליון) */}
+        <Route path="/help" element={<Help />} />
+      </Routes>
 
+      <Footer />
+    </div>
+  );
 }

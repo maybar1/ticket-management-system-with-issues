@@ -83,10 +83,7 @@ export default function App() {
 
         {/* פנייה חדשה (סטודנט) */}
         <Route path="/NewTicket" element={<NewTicket />} />
-        {/* אליאס כדי שתיקים ישנים/קישורים ל-/forms ימשיכו לעבוד */}
-        <Route path="/forms" element={<NewTicket />} />
-
-        {/* קיימים אצלך (לא חייב בתפריט העליון) */}
+  
         <Route path="/help" element={<Help />} />
       </Routes>
 

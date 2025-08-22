@@ -48,7 +48,7 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
 
   const managementLinks = [
     { text: "בית", to: "/", icon: <HomeIcon /> },
-    { text: "פניות", to: "/tickets", icon: <AssignmentIcon /> },
+     { text: "ניהול פניות", to: "/tickets", icon: <AssignmentIcon /> },
     { text: "עזרה", to: "/help", icon: <HelpOutlineIcon /> },
   ];
   const mainLinks = role === "student" ? studentLinks : managementLinks; // ✅ משמש ב-Drawer

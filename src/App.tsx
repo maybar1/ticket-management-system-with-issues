@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import NewTicket from './components/NewTicket';
 import Help from './components/Help';
+import ChatPage from './components/ChatPage';
 
 
 const LS_KEY = 'tickets:v1';
@@ -83,6 +84,8 @@ export default function App() {
 
         {/* פנייה חדשה (סטודנט) */}
         <Route path="/NewTicket" element={<NewTicket />} />
+        <Route path="/tickets/:id" element={<ChatPage />} />
+
   
         <Route path="/help" element={<Help />} />
       </Routes>

@@ -5,6 +5,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import * as React from "react";
+import { useEffect } from "react"; // 👈 חדש
 import IconButton from "@mui/material/IconButton";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -31,6 +32,12 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 👇 כל פעם שהתפקיד משתנה, נשמור ל-localStorage כתפקיד שהצ'אט מבין: student/agent
+  useEffect(() => {
+    const mapped = role === "team" ? "agent" : "student";
+    localStorage.setItem("role", mapped);
+  }, [role]);
+
   const toggleDrawer = () => setOpen((v) => !v);
   const handleNavigation = (url: string) => {
     navigate(url);
@@ -48,14 +55,18 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
 
   const managementLinks = [
     { text: "בית", to: "/", icon: <HomeIcon /> },
-     { text: "ניהול פניות", to: "/tickets", icon: <AssignmentIcon /> },
+    { text: "ניהול פניות", to: "/tickets", icon: <AssignmentIcon /> },
     { text: "עזרה", to: "/help", icon: <HelpOutlineIcon /> },
   ];
-  const mainLinks = role === "student" ? studentLinks : managementLinks; // ✅ משמש ב-Drawer
+  const mainLinks = role === "student" ? studentLinks : managementLinks;
 
   const handleRoleToggle = (_: unknown, newRole: Role | null) => {
     if (newRole) {
       onRoleChange?.(newRole);
+
+      // 👇 שמירה ל-localStorage גם כאן (מיד עם שינוי)
+      const mapped = newRole === "team" ? "agent" : "student";
+      localStorage.setItem("role", mapped);
     }
   };
 
@@ -112,7 +123,8 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
           </IconButton>
         </Toolbar>
       </AppBar>
-      {/** Drawer*/}
+
+      {/* Drawer */}
       <Drawer
         anchor="right"
         open={open}

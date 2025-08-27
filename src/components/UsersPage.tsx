@@ -98,7 +98,9 @@ export default function UsersPage() {
     const email = form.email.trim().toLowerCase();
     if (!email) e.email = "יש להזין אימייל.";
     else if (!EMAIL_REGEX.test(email))
-      e.email = "האימייל חייב להסתיים ב- @365.ono.ac.il.";
+      e.email = "must end with 365@ono.ac.il"
+    else if (rows.some((u) => u.email === email))
+      e.email = "האימייל כבר קיים.";
 
     // טלפון
     if (!form.phone.trim()) e.phone = "יש להזין מספר טלפון.";
@@ -120,7 +122,7 @@ export default function UsersPage() {
       phone: form.phone.trim(),
     };
 
-    setRows((prev) => [newUser, ...prev]); // מוסיף לראש הטבלה
+    setRows((prev) => [newUser, ...prev]); 
     setOpen(false);
   }
 

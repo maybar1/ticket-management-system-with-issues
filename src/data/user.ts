@@ -14,7 +14,7 @@ export class User {
 
 
 export const users: User[] = [
-  new User("u001", "דנה כהן", "dana@example.com", "050-1234567"),
-  new User("u002", "ליאור לוי", "lior@example.com", "052-9876543"),
-  new User("u003", "נועה רז", "noa@example.com", "053-4567890"),
+  new User("366495761", "דנה כהן", "dana@365.ono.ac.il", "050-1234567"),
+  new User("368495762", "ליאור לוי", "lior@365.ono.ac.il", "052-9876543"),
+  new User("366505763", "נועה רז", "noa@365.ono.ac.il", "053-4567890"),
 ];

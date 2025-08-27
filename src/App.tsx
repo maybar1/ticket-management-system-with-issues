@@ -2,15 +2,16 @@ import Header, { type Role } from './components/Header';
 import Footer from './components/Footer';
 import TicketsTable from './components/TicketsTable';
 import { tickets as seedTickets } from './data/tickets';
-import Ticket from './models/Ticket';
 import { useEffect, useMemo, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import NewTicket from './components/NewTicket';
 import Help from './components/Help';
 import ChatPage from './components/ChatPage';
+import Ticket from './models/Ticket';
 
 
-const LS_KEY = 'tickets:v1';
+
+const LS_KEY = 'tickets';
 const CURRENT_STUDENT_ID = '123456789';
 
 
@@ -31,6 +32,9 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify(tickets));
   }, [tickets]);
+
+  
+ 
 
   //add a new random Ticket to the beginning of the list.
   function addRandom() {

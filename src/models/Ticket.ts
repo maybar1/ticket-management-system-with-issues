@@ -7,6 +7,7 @@ export default class Ticket {
   studentId: string;
   date: string; // dd/mm/yyyy
   status: TicketStatus;
+  phone?: string;
 
   // Create a new Ticket class
   constructor(
@@ -15,7 +16,8 @@ export default class Ticket {
     description: string,
     studentId: string,
     date: string,
-    status: TicketStatus
+    status: TicketStatus,
+    phone?: string
   ) {
     this.id = id;
     this.subject = subject;
@@ -23,6 +25,7 @@ export default class Ticket {
     this.studentId = studentId;
     this.date = date;
     this.status = status;
+    if (phone && phone.trim()) this.phone = phone.trim();
   }
 
   static from(obj: any): Ticket {
@@ -32,7 +35,8 @@ export default class Ticket {
       String(obj.description),
       String(obj.studentId),
       String(obj.date),
-      obj.status as TicketStatus
+      obj.status as TicketStatus,
+      obj.phone ? String(obj.phone) : undefined
     );
   }
 
@@ -72,7 +76,20 @@ export default class Ticket {
       Math.floor(Math.random() * 900_000_000) + 100_000_000
     );
 
-    return new Ticket(nextId, subject, description, studentId, date, status);
+    const phone =
+      Math.random() < 0.5
+        ? undefined
+        : `05${Math.floor(10000000 + Math.random() * 9000000)}`;
+
+    return new Ticket(
+      nextId,
+      subject,
+      description,
+      studentId,
+      date,
+      status,
+      phone
+    );
   }
 }
 

@@ -19,9 +19,9 @@ import {
 // 🔹 הגדרות RTL לשדות + העברת האייקון של ה-Select לשמאל
 const rtlFieldSx = {
   "& .MuiInputBase-input": { textAlign: "right" }, // input רגיל
-  "& .MuiSelect-select": { textAlign: "right" },   // select
+  "& .MuiSelect-select": { textAlign: "right" }, // select
   "& .MuiSelect-icon": { left: 8, right: "auto" }, // החץ לשמאל
-  "& textarea": { textAlign: "right" },            // multiline
+  "& textarea": { textAlign: "right" }, // multiline
   "& .MuiInputLabel-root": {
     right: 14,
     left: "auto",
@@ -43,6 +43,7 @@ const DEPARTMENTS = [
 type FormData = {
   department: string;
   studentId: string;
+  phone: string;
   subject: string;
   description: string;
 };
@@ -69,21 +70,32 @@ function readFileAsDataURL(file: File): Promise<Attachment> {
   });
 }
 
+const ID_REGEX = /^\d{9}$/; // id with length of 9
+const PHONE_DIGITS = /^\d{10}$/;
+
+function isValidPhone(raw: string) {
+  return PHONE_DIGITS.test(raw);
+}
+
 export default function NewTicket() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormData>({
     department: "",
     studentId: "",
+    phone: "",
     subject: "",
     description: "",
   });
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange =
     (field: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value as any }));
+      const value = e.target.value;
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     };
 
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,16 +105,31 @@ export default function NewTicket() {
     setAttachments(list);
   };
 
+  function validate(): boolean {
+    const e: Record<string, string> = {};
+
+    // ולידציה
+    if (!formData.department) e.department = "יש לבחור מחלקה.";
+    const id = formData.studentId.trim();
+    if (!id) e.studentId = "יש להזין תעודת זהות.";
+    else if (!ID_REGEX.test(id))
+      e.studentId = "תעודת זהות חייבת להכיל 9 ספרות.";
+
+    if (!formData.subject) e.subject = "יש לבחור נושא פנייה.";
+    if ((formData.description || "").trim().length < 2)
+      e.description = "יש להזין תיאור קצר.";
+
+    if (formData.phone && !isValidPhone(formData.phone))
+      e.phone = "מספר טלפון לא תקין.  (למשל 05X-XXXXXXX).";
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // ולידציה בסיסית
-    if (!formData.department) return alert("יש לבחור מחלקה.");
-    if (!formData.studentId.trim()) return alert("יש להזין תעודת זהות.");
-    if (!formData.subject) return alert("יש לבחור נושא פנייה.");
-    if ((formData.description || "").trim().length < 2)
-      return alert("יש להזין תיאור קצר.");
-
+    if (!validate()) return;
     // חישוב מזהה חדש ושמירה
     const existing: Ticket[] = loadTickets();
     const nextId =
@@ -115,6 +142,7 @@ export default function NewTicket() {
       subject: formData.subject,
       description: formData.description.trim(),
       studentId: formData.studentId.trim(),
+      phone: formData.phone.trim() || undefined,
       date: formatDate(new Date()),
       status: "פתוח",
       priority: "רגילה", // ברירת מחדל – הסטודנט לא בוחר עדיפות
@@ -157,6 +185,8 @@ export default function NewTicket() {
             value={formData.department}
             onChange={handleChange("department")}
             sx={rtlFieldSx}
+            error={!!errors.department}
+            helperText={errors.department}
           >
             {DEPARTMENTS.map((d) => (
               <MenuItem key={d} value={d}>
@@ -173,8 +203,42 @@ export default function NewTicket() {
             label="תעודת זהות"
             name="studentId"
             value={formData.studentId}
-            onChange={handleChange("studentId")}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, "").slice(0, 9); // ספרות בלבד, אורך 9
+              setFormData((prev) => ({ ...prev, studentId: val }));
+              setErrors((prev) => ({ ...prev, studentId: "" }));
+            }}
             sx={rtlFieldSx}
+            inputProps={{
+              inputMode: "numeric",
+              pattern: "\\d{9}",
+              maxLength: 9,
+            }}
+            error={!!errors.studentId}
+            helperText={errors.studentId || " יש להזין רק ספרות"}
+          />
+
+          {/* טלפון */}
+          <TextField
+            fullWidth
+            margin="normal"
+            label="טלפון"
+            name="phone"
+            value={formData.phone}
+            onChange={(e) => {
+              const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10); // ספרות בלבד, עד 10
+              setFormData((prev) => ({ ...prev, phone: digitsOnly }));
+              setErrors((prev) => ({ ...prev, phone: "" }));
+            }}
+            sx={rtlFieldSx}
+            placeholder="למשל 05X-XXXXXXX"
+            autoComplete="tel"
+            inputProps={{
+              inputMode: "numeric",
+              pattern: "\\d{10}",
+              maxLength: 10,
+            }}
+            error={!!errors.phone}
           />
 
           {/* נושא */}
@@ -188,6 +252,8 @@ export default function NewTicket() {
             value={formData.subject}
             onChange={handleChange("subject")}
             sx={rtlFieldSx}
+            error={!!errors.subject}
+            helperText={errors.subject}
           >
             <MenuItem value="מערכת שעות">מערכת שעות</MenuItem>
             <MenuItem value="תשלומים">תשלומים</MenuItem>
@@ -208,6 +274,8 @@ export default function NewTicket() {
             multiline
             rows={3}
             sx={rtlFieldSx}
+            error={!!errors.description}
+            helperText={errors.description}
           />
 
           {/* צירוף קבצים */}
@@ -238,7 +306,12 @@ export default function NewTicket() {
             {attachments.length > 0 && (
               <Box sx={{ mt: 1 }}>
                 {attachments.map((a, i) => (
-                  <Typography key={i} variant="caption" display="block" align="right">
+                  <Typography
+                    key={i}
+                    variant="caption"
+                    display="block"
+                    align="right"
+                  >
                     • {a.name} ({(a.size / 1024).toFixed(1)} KB)
                   </Typography>
                 ))}

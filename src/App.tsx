@@ -7,7 +7,7 @@ import { Routes, Route } from 'react-router-dom';
 import NewTicket from './components/NewTicket';
 import Help from './components/Help';
 import ChatPage from './components/ChatPage';
-import Ticket from './models/Ticket';
+import { type Ticket, loadTickets, saveTickets, nextIdFrom } from './utils/storage';
 
 
 
@@ -19,28 +19,53 @@ export default function App() {
   const [role, setRole] = useState<Role>('student');
 
   const [tickets, setTickets] = useState<Ticket[]>(() => {
-    const raw = localStorage.getItem(LS_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed.map(Ticket.from);
-      } catch {}
-    }
-    return seedTickets.map(Ticket.from);
-  });
+  const ls = loadTickets();
+  return ls.length ? ls : (seedTickets as Ticket[]); 
+});
+
 
   useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify(tickets));
-  }, [tickets]);
+  if (tickets.length < 10) {
+    const base = tickets.length ? Math.max(...tickets.map(t => Number(t.id) || 100)) : 100;
+    const extras: Ticket[] = Array.from({ length: 10 - tickets.length }, (_, i) => ({
+      id: String(base + 1 + i),
+      subject: 'שאלה כללית',
+      description: 'פניית דוגמה',
+      studentId: '123456789',
+      date: new Date().toLocaleDateString('he-IL'),
+      status: 'פתוח',
+      priority: 'רגילה',
+      department: 'מנהל סטודנטים',
+      attachments: []
+    }));
+    const seeded = [...tickets, ...extras];
+    setTickets(seeded);
+    saveTickets(seeded);
+  }
+  // רץ פעם אחת
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
-  
- 
+    useEffect(() => { saveTickets(tickets); }, [tickets]);
+
+
 
   //add a new random Ticket to the beginning of the list.
   function addRandom() {
-    const nextId = tickets.length ? Math.max(...tickets.map(t => t.id)) + 1 : 101;
-    setTickets(prev => [Ticket.random(nextId), ...prev]);
-  }
+  const newOne: Ticket = {
+    id: nextIdFrom(tickets),
+    subject: 'שאלה כללית',
+    description: 'תיאור לדוגמה',
+    studentId: '123456789',
+    date: new Date().toLocaleDateString('he-IL'),
+    status: 'פתוח',
+    priority: 'רגילה',
+    department: 'מנהל סטודנטים',
+    attachments: []
+  };
+  setTickets(prev => [newOne, ...prev]);
+}
+
 
   // Function for the button click
   function saveToLocalStorage() {

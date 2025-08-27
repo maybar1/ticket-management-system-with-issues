@@ -17,12 +17,11 @@ export default function ChatPage() {
   const ticketId = String(id || "");
   const navigate = useNavigate();
 
-
   const ticket = useMemo(() => {
     const all = loadTickets();
     return all.find(t => String(t.id) === ticketId);
   }, [ticketId]);
-  
+
   // הודעות הצ'אט לשיחה זו
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
@@ -40,21 +39,20 @@ export default function ChatPage() {
     setTimeout(() => listRef.current?.lastElementChild?.scrollIntoView({ behavior: "smooth" }), 0);
   }, [messages.length]);
 
-  // 👇 זריעת הודעת פתיחה אם השיחה ריקה
+  // זריעת הודעת פתיחה אם השיחה ריקה
   useEffect(() => {
-  if (!ticketId) return;
-  seedChatFromTicketIfEmpty(
-    ticketId,
-    {
-      subject: ticket?.subject ?? `פנייה #${ticketId}`,
-      description: ticket?.description ?? "",
-      date: ticket?.date,
-    },
-    "איילת"
-  );
-  setMessages(loadChat(ticketId));
-}, [ticketId, ticket?.subject, ticket?.description, ticket?.date]);
-
+    if (!ticketId) return;
+    seedChatFromTicketIfEmpty(
+      ticketId,
+      {
+        subject: ticket?.subject ?? `פנייה #${ticketId}`,
+        description: ticket?.description ?? "",
+        date: ticket?.date,
+      },
+      "איילת"
+    );
+    setMessages(loadChat(ticketId));
+  }, [ticketId, ticket?.subject, ticket?.description, ticket?.date]);
 
   const handleSend = () => {
     const trimmed = text.trim();
@@ -78,17 +76,66 @@ export default function ChatPage() {
     "טופל—אעדכן ברגע שיש פתרון"
   ];
 
+  // עוזר תאריך/שעה: מקבל string | number | Date
+  const dt = (value: string | number | Date) => {
+    const d = new Date(value);
+    const date = d.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const time = d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+    return { date, time };
+  };
+
   return (
-    <Box sx={{ maxWidth: 960, mx: "auto", p: 2 }}>
-      {/* כותרת עליונה */}
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <IconButton onClick={() => navigate(-1)} aria-label="חזרה">
+    <Box sx={{ maxWidth: 960, mx: "auto", p: 2 }} dir="rtl">
+      {/* פס עליון: חזור בלבד */}
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+        <IconButton onClick={() => navigate(-1)} aria-label="חזור">
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h6">
-          פניה מספר #{ticketId}{ticket?.subject ? ` • ${ticket.subject}` : ""}
+        <Typography
+          variant="body1"
+          sx={{ cursor: "pointer", userSelect: "none" }}
+          onClick={() => navigate(-1)}
+        >
+          חזור
         </Typography>
       </Stack>
+
+      {/* כותרת אמצעית + כרטיס פרטי הפנייה */}
+      <Box sx={{ mb: 2 }}>
+        <Typography
+          variant="h5"
+          align="center"
+          sx={{ fontWeight: 700, color: "primary.main", mb: 1 }}
+        >
+          פנייה #{ticketId}
+        </Typography>
+
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 2,
+            borderRadius: 2,
+            bgcolor: theme => theme.palette.mode === "light" ? "grey.50" : "grey.900",
+          }}
+        >
+          <Stack spacing={0.75}>
+            <Typography variant="body1">
+              <b>נושא הפנייה:</b> {ticket?.subject ?? `פנייה #${ticketId}`}
+            </Typography>
+            <Typography variant="body1">
+              <b>סטודנט:</b> {displayName("student")}
+            </Typography>
+            <Typography variant="body1">
+              <b>סטטוס:</b> {ticket?.status ?? "—"}
+            </Typography>
+            {ticket?.description && (
+              <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+                <b>תיאור:</b> {ticket.description}
+              </Typography>
+            )}
+          </Stack>
+        </Paper>
+      </Box>
 
       {/* חלון הודעות */}
       <Paper variant="outlined" sx={{ p: 0, height: "60vh", display: "flex", flexDirection: "column" }}>
@@ -96,7 +143,7 @@ export default function ChatPage() {
           {messages.map(m => {
             const isStudent = m.sender === "student";
             const name = m.senderName || displayName(m.sender);
-            const time = new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            const { date, time } = dt(m.ts);
 
             return (
               <ListItem
@@ -105,7 +152,7 @@ export default function ChatPage() {
                 sx={{
                   display: "flex",
                   justifyContent: isStudent ? "flex-end" : "flex-start",
-                  mb: 1.2,
+                  mb: 1.5,
                 }}
               >
                 {!isStudent && (
@@ -117,18 +164,7 @@ export default function ChatPage() {
                 )}
 
                 <Box sx={{ maxWidth: "70%" }}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: "block",
-                      color: "text.secondary",
-                      mb: 0.5,
-                      textAlign: isStudent ? "right" : "left",
-                    }}
-                  >
-                    {name}
-                  </Typography>
-
+                  {/* בועה */}
                   <Paper
                     elevation={0}
                     sx={{
@@ -144,12 +180,21 @@ export default function ChatPage() {
                     <ListItemText
                       primary={m.text}
                       primaryTypographyProps={{ sx: { whiteSpace: "pre-wrap" } }}
-                      secondary={<span dir="ltr" style={{ opacity: 0.7 }}>{time}</span>}
-                      secondaryTypographyProps={{
-                        sx: { textAlign: isStudent ? "left" : "right", mt: 0.5 }
-                      }}
                     />
                   </Paper>
+
+                  {/* שורת מטה: שם • שעה • תאריך */}
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      mt: 0.5,
+                      color: "text.secondary",
+                      display: "block",
+                      textAlign: isStudent ? "left" : "right",
+                    }}
+                  >
+                    {name} • {time} • {date}
+                  </Typography>
                 </Box>
 
                 {isStudent && (
@@ -180,6 +225,7 @@ export default function ChatPage() {
                   handleSend();
                 }
               }}
+              inputProps={{ dir: "rtl" }}
             />
             <IconButton color="primary" onClick={handleSend} aria-label="שלח">
               <SendIcon />

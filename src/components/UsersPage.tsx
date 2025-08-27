@@ -1,4 +1,4 @@
-// src/components/UsersPage.tsx
+import { MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -19,7 +19,7 @@ import {
   Stack,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { users as seedUsers, type User } from "../data/user";
+import { users as seedUsers, type User, type UserRole } from "../data/user";
 
 const LS_USERS_KEY = "users:v1";
 
@@ -41,25 +41,25 @@ export default function UsersPage() {
         if (Array.isArray(arr)) return arr as User[];
       } catch {}
     }
-    return seedUsers; // טעינה/זריעה ראשונית
+    return seedUsers; // 
   });
 
   useEffect(() => {
     localStorage.setItem(LS_USERS_KEY, JSON.stringify(rows));
   }, [rows]);
 
-  // ---------- Add User Dialog ----------
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<User>({
     id: "",
     name: "",
     email: "",
     phone: "",
+    role: "student",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleOpen = () => {
-    setForm({ id: "", name: "", email: "", phone: "" });
+    setForm({ id: "", name: "", email: "", phone: "", role: "student" });
     setErrors({});
     setOpen(true);
   };
@@ -69,8 +69,8 @@ export default function UsersPage() {
     (field: keyof User) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       let value = e.target.value;
-      if (field === "id") value = value.replace(/\D/g, "").slice(0, 9); // ת"ז: ספרות בלבד, עד 9
-      if (field === "phone") value = value.replace(/\D/g, "").slice(0, 10); // טל': ספרות בלבד, עד 10
+      if (field === "id") value = value.replace(/\D/g, "").slice(0, 9);
+      if (field === "phone") value = value.replace(/\D/g, "").slice(0, 10);
       setForm((prev) => ({ ...prev, [field]: value }));
       setErrors((prev) => ({ ...prev, [field]: "" }));
     };
@@ -97,15 +97,15 @@ export default function UsersPage() {
 
     const email = form.email.trim().toLowerCase();
     if (!email) e.email = "יש להזין אימייל.";
-    else if (!EMAIL_REGEX.test(email))
-      e.email = "must end with 365@ono.ac.il"
-    else if (rows.some((u) => u.email === email))
-      e.email = "האימייל כבר קיים.";
+    else if (!EMAIL_REGEX.test(email)) e.email = "must end with 365@ono.ac.il";
+    else if (rows.some((u) => u.email === email)) e.email = "האימייל כבר קיים.";
 
     // טלפון
     if (!form.phone.trim()) e.phone = "יש להזין מספר טלפון.";
     else if (!PHONE_REGEX.test(form.phone))
       e.phone = "מספר טלפון חייב להכיל בדיוק 10 ספרות.";
+    //תפקיד
+    if (!form.role) e.role = "יש לבחור תפקיד.";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -118,11 +118,12 @@ export default function UsersPage() {
     const newUser: User = {
       id: form.id.trim(),
       name: form.name.trim(),
-      email: form.email.trim(),
+      email: form.email.trim().toLowerCase(),
       phone: form.phone.trim(),
+      role: form.role,
     };
 
-    setRows((prev) => [newUser, ...prev]); 
+    setRows((prev) => [newUser, ...prev]);
     setOpen(false);
   }
 
@@ -149,6 +150,7 @@ export default function UsersPage() {
               <TableCell align="right">שם</TableCell>
               <TableCell align="right">אימייל</TableCell>
               <TableCell align="right">טלפון</TableCell>
+              <TableCell align="right">תפקיד</TableCell> 
             </TableRow>
           </TableHead>
           <TableBody>
@@ -158,6 +160,7 @@ export default function UsersPage() {
                 <TableCell align="right">{u.name}</TableCell>
                 <TableCell align="right">{u.email}</TableCell>
                 <TableCell align="right">{u.phone}</TableCell>
+                <TableCell align="right">{u.role === "team" ? "מנהל" : "סטודנט"}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -216,6 +219,24 @@ export default function UsersPage() {
                 }}
                 error={!!errors.phone}
               />
+              <TextField
+                select
+                required
+                label="תפקיד"
+                value={form.role}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    role: e.target.value as UserRole,
+                  }))
+                }
+                sx={rtlFieldSx}
+                error={!!errors.role}
+                helperText={errors.role}
+              >
+                <MenuItem value="student">סטודנט</MenuItem>
+                <MenuItem value="team">מנהל</MenuItem>
+              </TextField>
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>

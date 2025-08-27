@@ -1,7 +1,7 @@
 // src/utils/chat.ts
 export type ChatMessage = {
   id: string;
-  ticketId: number;
+  ticketId: string;
   sender: "student" | "agent";
   text: string;
   ts: number;
@@ -19,13 +19,13 @@ function writeAll(db: Record<string, ChatMessage[]>) {
   localStorage.setItem(KEY, JSON.stringify(db));
 }
 
-export function loadChat(ticketId: number): ChatMessage[] {
+export function loadChat(ticketId: string): ChatMessage[] {
   const db = readAll();
   return db[String(ticketId)] ?? [];
 }
 
 export function addMessage(
-  ticketId: number,
+  ticketId: string,
   msg: Omit<ChatMessage, "id" | "ts" | "ticketId">
 ) {
   const db = readAll();
@@ -77,7 +77,7 @@ export function seedChatFromTicketIfEmpty(
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : String(Date.now() + Math.random()),
-    ticketId,
+    ticketId: String(ticketId),
     sender: "student",
     senderName: studentName,
     text: firstText,

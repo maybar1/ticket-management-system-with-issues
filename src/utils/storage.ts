@@ -14,6 +14,7 @@ export type Ticket = {
   studentId: string;
   date: string; // DD/MM/YYYY
   status: "פתוח" | "בטיפול" | "סגור"; // 👈 יישור ל"סגור"
+  phone?: string;
   priority: "רגילה" | "גבוהה" | "דחופה";
   department: string;
   attachments?: Attachment[];
@@ -42,7 +43,6 @@ export function addTicket(ticket: Ticket) {
   saveTickets(all);
 }
 
-// 👇 חדש/מעודכן: תומך גם ב-id מספרי וגם מחרוזת, ומשווה כמחרוזת
 export function updateTicketStatus(
   id: string | number,
   status: "פתוח" | "בטיפול" | "סגור"

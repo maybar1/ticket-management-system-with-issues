@@ -8,6 +8,7 @@ import NewTicket from './components/NewTicket';
 import Help from './components/Help';
 import ChatPage from './components/ChatPage';
 import { type Ticket, loadTickets, saveTickets, nextIdFrom } from './utils/storage';
+import UsersPage from "./components/UsersPage";
 
 
 
@@ -42,8 +43,6 @@ export default function App() {
     setTickets(seeded);
     saveTickets(seeded);
   }
-  // רץ פעם אחת
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
 
     useEffect(() => { saveTickets(tickets); }, [tickets]);
@@ -117,6 +116,7 @@ export default function App() {
 
   
         <Route path="/help" element={<Help />} />
+        <Route path="/users" element={<UsersPage />} />
       </Routes>
 
       <Footer />

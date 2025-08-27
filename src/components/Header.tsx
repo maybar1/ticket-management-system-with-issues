@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import * as React from "react";
-import { useEffect } from "react"; // 👈 חדש
+import { useEffect } from "react"; 
 import IconButton from "@mui/material/IconButton";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -32,7 +32,6 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 👇 כל פעם שהתפקיד משתנה, נשמור ל-localStorage כתפקיד שהצ'אט מבין: student/agent
   useEffect(() => {
     const mapped = role === "team" ? "agent" : "student";
     localStorage.setItem("role", mapped);
@@ -57,6 +56,7 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
     { text: "בית", to: "/", icon: <HomeIcon /> },
     { text: "ניהול פניות", to: "/tickets", icon: <AssignmentIcon /> },
     { text: "עזרה", to: "/help", icon: <HelpOutlineIcon /> },
+    { text: "משתמשים", to: "/users", icon: <GroupIcon /> }, 
   ];
   const mainLinks = role === "student" ? studentLinks : managementLinks;
 

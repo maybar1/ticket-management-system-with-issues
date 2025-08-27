@@ -8,12 +8,12 @@ export type Attachment = {
 };
 
 export type Ticket = {
-  id: string; // אם אצלך במודל זה number — לא נורא. ניישר בהשוואה לפי מחרוזת.
+  id: string; 
   subject: string;
   description: string;
   studentId: string;
   date: string; // DD/MM/YYYY
-  status: "פתוח" | "בטיפול" | "סגור"; // 👈 יישור ל"סגור"
+  status: "פתוח" | "בטיפול" | "סגור"; 
   phone?: string;
   priority: "רגילה" | "גבוהה" | "דחופה";
   department: string;
@@ -55,4 +55,8 @@ export function updateTicketStatus(
     saveTickets(all);
   }
   return all;
+}
+export function nextIdFrom(list: Ticket[], start = 101): string {
+  const max = list.length ? Math.max(...list.map(t => Number(t.id) || 0)) : start - 1;
+  return String(max + 1);
 }

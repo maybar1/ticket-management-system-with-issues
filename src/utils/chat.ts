@@ -60,7 +60,7 @@ function parseDDMMYYYY(dateStr?: string): number {
  * מחזיר את רשימת ההודעות לאחר הזריעה/ללא שינוי אם כבר קיימות הודעות.
  */
 export function seedChatFromTicketIfEmpty(
-  ticketId: number,
+  ticketId: string,
   ticket: { subject: string; description: string; date?: string },
   studentName = "איילת"
 ) {

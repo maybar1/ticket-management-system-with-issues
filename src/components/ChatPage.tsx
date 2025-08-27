@@ -10,21 +10,21 @@ import SendIcon from "@mui/icons-material/Send";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import PersonIcon from "@mui/icons-material/Person";
 import { addMessage, loadChat, seedChatFromTicketIfEmpty, type ChatMessage } from "../utils/chat";
-import { tickets } from "../data/tickets";
+import { loadTickets } from "../utils/storage";
 
 export default function ChatPage() {
   const { id } = useParams();
-  const ticketId = Number(id);
+  const ticketId = String(id || "");
   const navigate = useNavigate();
 
-  // מידע בסיסי על הקריאה (כותרת, נושא, תיאור)
-  const ticket = useMemo(
-    () => tickets?.find(t => t.id === ticketId),
-    [ticketId]
-  );
 
+  const ticket = useMemo(() => {
+    const all = loadTickets();
+    return all.find(t => String(t.id) === ticketId);
+  }, [ticketId]);
+  
   // הודעות הצ'אט לשיחה זו
-  const [messages, setMessages] = useState<ChatMessage[]>(() => loadChat(ticketId));
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -42,25 +42,29 @@ export default function ChatPage() {
 
   // 👇 זריעת הודעת פתיחה אם השיחה ריקה
   useEffect(() => {
-    if (messages.length === 0 && ticket) {
-      const seeded = seedChatFromTicketIfEmpty(ticketId, {
-        subject: ticket.subject,
-        description: ticket.description,
-        date: ticket.date,
-      }, "איילת");
-      setMessages(seeded);
-    }
-  }, [ticketId, ticket, messages.length]);
+  if (!ticketId) return;
+  seedChatFromTicketIfEmpty(
+    ticketId,
+    {
+      subject: ticket?.subject ?? `פנייה #${ticketId}`,
+      description: ticket?.description ?? "",
+      date: ticket?.date,
+    },
+    "איילת"
+  );
+  setMessages(loadChat(ticketId));
+}, [ticketId, ticket?.subject, ticket?.description, ticket?.date]);
+
 
   const handleSend = () => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || !ticketId) return;
 
     const msg = addMessage(ticketId, {
       sender: currentRole,
       text: trimmed,
       senderName: displayName(currentRole),
-    } as any);
+    });
 
     setMessages(prev => [...prev, msg]);
     setText("");

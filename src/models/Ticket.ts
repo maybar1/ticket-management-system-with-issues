@@ -1,7 +1,7 @@
 export type TicketStatus = "פתוח" | "בטיפול" | "סגור";
 
 export default class Ticket {
-  id: number;
+  id: string;
   subject: string;
   description: string;
   studentId: string;
@@ -11,7 +11,7 @@ export default class Ticket {
 
   // Create a new Ticket class
   constructor(
-    id: number,
+    id: string,
     subject: string,
     description: string,
     studentId: string,
@@ -30,7 +30,7 @@ export default class Ticket {
 
   static from(obj: any): Ticket {
     return new Ticket(
-      Number(obj.id),
+      String(obj.id),
       String(obj.subject),
       String(obj.description),
       String(obj.studentId),
@@ -82,7 +82,7 @@ export default class Ticket {
         : `05${Math.floor(10000000 + Math.random() * 9000000)}`;
 
     return new Ticket(
-      nextId,
+      String(nextId),
       subject,
       description,
       studentId,

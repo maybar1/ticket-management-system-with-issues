@@ -9,6 +9,7 @@ import Help from './components/Help';
 import ChatPage from './components/ChatPage';
 import { type Ticket, loadTickets, saveTickets, nextIdFrom } from './utils/storage';
 import UsersPage from "./components/UsersPage";
+import SubmissionSuccess from "./components/SubmissionSuccess"; 
 
 
 
@@ -114,6 +115,8 @@ export default function App() {
         <Route path="/NewTicket" element={<NewTicket />} />
         <Route path="/tickets/:id" element={<ChatPage />} />
 
+        {/* ✅ מסך אישור שליחה */}
+        <Route path="/submitted/:id" element={<SubmissionSuccess />} />
   
         <Route path="/help" element={<Help />} />
         <Route path="/users" element={<UsersPage />} />

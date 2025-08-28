@@ -1,3 +1,4 @@
+
 import { MenuItem } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -19,7 +20,6 @@ import {
   Stack,
   IconButton,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import { users as seedUsers, type User, type UserRole } from "../data/user";
 
@@ -179,7 +179,7 @@ export default function UsersPage() {
         <Typography variant="h5" sx={{ flexGrow: 1 }}>
           משתמשים
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>
+        <Button variant="contained" onClick={handleOpenCreate}>
           הוספת משתמש
         </Button>
       </Box>
@@ -287,7 +287,13 @@ export default function UsersPage() {
 
           {/* כפתורים גדולים וממורכזים בלבד */}
           <DialogActions sx={{ px: 3, pb: 3 }}>
-            <Stack direction="row" spacing={3} sx={{ mx: "auto" }} alignItems="center" justifyContent="center">
+            <Stack
+              direction="row"
+              spacing={3}
+              sx={{ mx: "auto" }}
+              alignItems="center"
+              justifyContent="center"
+            >
               {mode === "edit" && (
                 <Button
                   variant="contained"

@@ -57,6 +57,7 @@ function parseDDMMYYYY(dateStr?: string): number {
 
 /**
  * זורע הודעת פתיחה מתוך פרטי הפנייה, אם אין עדיין שיחה לפנייה הזו.
+ * ההודעה הראשונה תכיל רק את תיאור הפנייה.
  * מחזיר את רשימת ההודעות לאחר הזריעה/ללא שינוי אם כבר קיימות הודעות.
  */
 export function seedChatFromTicketIfEmpty(
@@ -69,7 +70,8 @@ export function seedChatFromTicketIfEmpty(
   const existing = db[key] ?? [];
   if (existing.length > 0) return existing;
 
-  const firstText = `פנייה חדשה: ${ticket.subject}\n${ticket.description}`;
+  // שינוי: רק התיאור בתוך ההודעה הראשונה
+  const firstText = ticket.description.trim();
   const ts = parseDDMMYYYY(ticket.date);
 
   const seeded: ChatMessage = {

@@ -151,7 +151,8 @@ export default function NewTicket() {
     };
 
     addTicket(newTicket);
-    navigate("/"); // חזרה לבית
+    // 🔹 ניווט למסך אישור עם ה־ID החדש
+    navigate(`/submitted/${newTicket.id}`);
   };
 
   return (

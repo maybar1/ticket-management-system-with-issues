@@ -125,7 +125,7 @@ export default function UsersPage() {
 
     const email = form.email.trim().toLowerCase();
     if (!email) e.email = "יש להזין אימייל.";
-    else if (!EMAIL_REGEX.test(email)) e.email = "must end with 365@ono.ac.il";
+    else if (!EMAIL_REGEX.test(email)) e.email = "must end with @365.ono.ac.il";
     else if (
       rows.some(
         (u) =>

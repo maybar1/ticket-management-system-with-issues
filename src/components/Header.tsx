@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import * as React from "react";
-import { useEffect } from "react"; 
+import { useEffect } from "react";
 import IconButton from "@mui/material/IconButton";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -32,6 +32,10 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const goHome = React.useCallback(() => {
+    if (location.pathname !== "/") navigate("/");
+  }, [navigate, location.pathname]);
+
   useEffect(() => {
     const mapped = role === "team" ? "agent" : "student";
     localStorage.setItem("role", mapped);
@@ -56,7 +60,7 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
     { text: "בית", to: "/", icon: <HomeIcon /> },
     { text: "ניהול פניות", to: "/tickets", icon: <AssignmentIcon /> },
     { text: "עזרה", to: "/help", icon: <HelpOutlineIcon /> },
-    { text: "משתמשים", to: "/users", icon: <GroupIcon /> }, 
+    { text: "משתמשים", to: "/users", icon: <GroupIcon /> },
   ];
   const mainLinks = role === "student" ? studentLinks : managementLinks;
 
@@ -75,7 +79,20 @@ export default function Header({ role, onRoleChange }: HeaderProps) {
       <AppBar position="static">
         <Toolbar>
           {/* כותרת בצד שמאל */}
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{ flexGrow: 1, cursor: "pointer", userSelect: "none" }}
+            onClick={goHome}
+            role="link"
+            tabIndex={0}
+            title="חזרה לבית"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                goHome();
+              }
+            }}
+          >
             Ticket Management System
           </Typography>
 

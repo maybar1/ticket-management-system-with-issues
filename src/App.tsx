@@ -15,6 +15,7 @@ import {
 } from "./utils/storage";
 import UsersPage from "./components/UsersPage";
 import SubmissionSuccess from "./components/SubmissionSuccess";
+import TicketModel from "./models/Ticket";
 
 const CURRENT_STUDENT_ID = "123456789";
 
@@ -60,13 +61,15 @@ export default function App() {
 
   //add a new random Ticket to the beginning of the list.
   function addRandom() {
+    const nextId = nextIdFrom(tickets);
+    const r = TicketModel.random(Number(nextId));
     const newOne: Ticket = {
-      id: nextIdFrom(tickets),
-      subject: "שאלה כללית",
-      description: "תיאור לדוגמה",
-      studentId: "123456789",
-      date: new Date().toLocaleDateString("he-IL"),
-      status: "פתוח",
+      id: String(r.id),
+      subject: r.subject,
+      description: r.description,
+      studentId: r.studentId,
+      date: r.date,
+      status: r.status,
       priority: "רגילה",
       department: "מנהל סטודנטים",
       attachments: [],

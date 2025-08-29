@@ -1,5 +1,4 @@
-
-import { MenuItem } from "@mui/material";
+import { MenuItem, Snackbar, Alert } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
@@ -75,6 +74,7 @@ export default function UsersPage() {
     role: "student",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMsg, setSuccessMsg] = useState(""); // ✅ הודעת הצלחה
 
   const handleOpenCreate = () => {
     setMode("create");
@@ -158,10 +158,12 @@ export default function UsersPage() {
 
     if (mode === "create") {
       setRows((prev) => [sanitized, ...prev]);
+      setSuccessMsg("✅ משתמש נוסף בהצלחה!");
     } else {
       setRows((prev) =>
         prev.map((u) => (u.id === originalRef.current.id ? { ...u, ...sanitized } : u))
       );
+      setSuccessMsg("✅ פרטי המשתמש עודכנו בהצלחה!");
     }
 
     setOpen(false);
@@ -170,6 +172,7 @@ export default function UsersPage() {
   function handleDeleteCurrent() {
     if (!confirm(`למחוק את ${form.name}?`)) return;
     setRows((prev) => prev.filter((x) => x.id !== originalRef.current.id));
+    setSuccessMsg("🗑️ המשתמש נמחק בהצלחה!");
     setOpen(false);
   }
 
@@ -317,6 +320,23 @@ export default function UsersPage() {
           </DialogActions>
         </Box>
       </Dialog>
+
+      {/* ✅ הודעת הצלחה */}
+      <Snackbar
+        open={!!successMsg}
+        autoHideDuration={5000}
+        onClose={() => setSuccessMsg("")}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSuccessMsg("")}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {successMsg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -20,6 +20,7 @@ import {
   IconButton,
 } from "@mui/material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // unused on purpose
 import { users as seedUsers, type User, type UserRole } from "../data/user";
 
 const LS_USERS_KEY = "users:v1";

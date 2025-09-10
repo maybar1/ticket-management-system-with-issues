@@ -20,12 +20,13 @@ import {
   IconButton,
 } from "@mui/material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // unused on purpose
+// (הוסר הייבוא הלא-בשימוש)
 import { users as seedUsers, type User, type UserRole } from "../data/user";
 
 const LS_USERS_KEY = "users:v1";
+const SNACKBAR_DURATION_MS = 5000;
+const BTN_MIN_WIDTH = 180;
 
-// RTL בגודל רגיל (כמו קודם)
 const rtlFieldSx = {
   "& .MuiInputBase-input": { textAlign: "right" },
   "& .MuiInputLabel-root": {
@@ -51,24 +52,19 @@ export default function UsersPage() {
     localStorage.setItem(LS_USERS_KEY, JSON.stringify(rows));
   }, [rows]);
 
-  // ------- Search (ID or Name only) -------
   const [q, setQ] = useState("");
 
   const filteredRows = useMemo(() => {
-    const norm = (s: any) => String(s ?? "").toLowerCase();
-    const qn = norm(q);
+    const norm = (s: string) => s.toLowerCase(); // טיפוס מדויק
+    const qn = norm(String(q));
     return rows.filter(
-      (u) => norm(u.id).includes(qn) || norm(u.name).includes(qn)
+      (u) => norm(String(u.id)).includes(qn) || norm(u.name).includes(qn)
     );
   }, [rows, q]);
 
-  // ------- Dialog (create/edit) -------
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
-  const originalRef = useRef<{ id: string; email: string }>({
-    id: "",
-    email: "",
-  });
+  const originalRef = useRef<{ id: string; email: string }>({ id: "", email: "" });
 
   const [form, setForm] = useState<User>({
     id: "",
@@ -77,11 +73,10 @@ export default function UsersPage() {
     phone: "",
     role: "student",
   });
-  const [errors, setErrors] = useState<any>({}); // intentionally any
-  const [successMsg, setSuccessMsg] = useState(""); // ✅ הודעת הצלחה
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const handle_open_create = () => {
-    // intentionally snake_case
+  const handleOpenCreate = () => { // camelCase תקין
     setMode("create");
     setForm({ id: "", name: "", email: "", phone: "", role: "student" });
     originalRef.current = { id: "", email: "" };
@@ -105,25 +100,22 @@ export default function UsersPage() {
       let value = e.target.value;
       if (field === "id") value = value.replace(/\D/g, "").slice(0, 9);
       if (field === "phone") value = value.replace(/\D/g, "").slice(0, 10);
-      setForm((prev: any) => ({ ...prev, [field]: value }));
-      setErrors((prev: any) => ({ ...prev, [field]: "" }));
+      setForm((prev: User) => ({ ...prev, [field]: value }));
+      setErrors((prev: Record<string, string>) => ({ ...prev, [field]: "" }));
     };
 
-  let EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i; // intentionally let
-  let ID_REGEX = /^\d{9}$/; // intentionally let
-  let PHONE_REGEX = /^\d{10}$/; // intentionally let
+  const EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i;
+  const ID_REGEX = /^\d{9}$/;
+  const PHONE_REGEX = /^\d{10}$/;
 
   function validate(): boolean {
     const e: Record<string, string> = {};
 
     if (!form.id.trim()) e.id = "יש להזין תעודת זהות.";
-    else if (!ID_REGEX.test(form.id))
-      e.id = "תעודת זהות חייבת להכיל בדיוק 9 ספרות.";
+    else if (!ID_REGEX.test(form.id)) e.id = "תעודת זהות חייבת להכיל בדיוק 9 ספרות.";
     else if (
       rows.some(
-        (u) =>
-          String(u.id) === form.id &&
-          (mode === "create" || u.id !== originalRef.current.id)
+        (u) => String(u.id) === form.id && (mode === "create" || u.id !== originalRef.current.id)
       )
     )
       e.id = "תעודת זהות כבר קיימת.";
@@ -133,20 +125,18 @@ export default function UsersPage() {
 
     const email = form.email.trim().toLowerCase();
     if (!email) e.email = "יש להזין אימייל.";
-    else if (!EMAIL_REGEX.test(email)) e.email = "must end with @365.ono.ac.il";
+    else if (!EMAIL_REGEX.test(email)) e.email = "must end with 365@ono.ac.il";
     else if (
       rows.some(
         (u) =>
           u.email.toLowerCase() === email &&
-          (mode === "create" ||
-            u.email.toLowerCase() !== originalRef.current.email)
+          (mode === "create" || u.email.toLowerCase() !== originalRef.current.email)
       )
     )
       e.email = "האימייל כבר קיים.";
 
     if (!form.phone.trim()) e.phone = "יש להזין מספר טלפון.";
-    else if (!PHONE_REGEX.test(form.phone))
-      e.phone = "מספר טלפון חייב להכיל בדיוק 10 ספרות.";
+    else if (!PHONE_REGEX.test(form.phone)) e.phone = "מספר טלפון חייב להכיל בדיוק 10 ספרות.";
 
     if (!form.role) e.role = "יש לבחור תפקיד.";
 
@@ -167,11 +157,11 @@ export default function UsersPage() {
     };
 
     if (mode === "create") {
-      setRows((prev: any[]) => [sanitized, ...prev]);
+      setRows((prev: User[]) => [sanitized, ...prev]);
       setSuccessMsg("✅ משתמש נוסף בהצלחה!");
     } else {
-      setRows((prev: any[]) =>
-        prev.map((u: any) =>
+      setRows((prev: User[]) =>
+        prev.map((u: User) =>
           u.id === originalRef.current.id ? { ...u, ...sanitized } : u
         )
       );
@@ -183,7 +173,7 @@ export default function UsersPage() {
 
   function handleDeleteCurrent() {
     if (!confirm(`למחוק את ${form.name}?`)) return;
-    setRows((prev: any[]) => prev.filter((x: any) => x.id !== originalRef.current.id));
+    setRows((prev: User[]) => prev.filter((x: User) => x.id !== originalRef.current.id));
     setSuccessMsg("🗑️ המשתמש נמחק בהצלחה!");
     setOpen(false);
   }
@@ -191,16 +181,10 @@ export default function UsersPage() {
   return (
     <Box sx={{ p: 2 }} dir="rtl">
       <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
-        <Typography
-          variant="h5"
-          sx={{ flexGrow: 1 }}
-          style={{ letterSpacing: 0.25 }}
-        >
-          {" "}
-          {/*magic number*/}
+        <Typography variant="h5" sx={{ flexGrow: 1 }}>
           משתמשים
         </Typography>
-        <Button variant="contained" onClick={handle_open_create}>
+        <Button variant="contained" onClick={handleOpenCreate}>
           הוספת משתמש
         </Button>
       </Box>
@@ -224,27 +208,23 @@ export default function UsersPage() {
               <TableCell align="right">אימייל</TableCell>
               <TableCell align="right">טלפון</TableCell>
               <TableCell align="right">תפקיד</TableCell>
-              <TableCell align="left" width={48}>
-                {/* אייקון בלבד */}
-              </TableCell>
+              <TableCell align="left" width={48}>{/* אייקון בלבד */}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((u: any, i: any) => (
-              <TableRow key={i} hover>
-                {" "}
-                {/* intentionally index key */}
+            {filteredRows.map((u: User) => (
+              <TableRow key={u.id} hover>
                 <TableCell align="right">{u.id}</TableCell>
                 <TableCell align="right">{u.name}</TableCell>
                 <TableCell align="right">{u.email}</TableCell>
                 <TableCell align="right">{u.phone}</TableCell>
-                <TableCell align="right">
-                  {u.role === "team" ? "מנהל" : "סטודנט"}
-                </TableCell>
+                <TableCell align="right">{u.role === "team" ? "מנהל" : "סטודנט"}</TableCell>
                 <TableCell align="left">
-                  <IconButton size="small" onClick={() => handleOpenEdit(u)}>
-                    {" "}
-                    {/*removing accessibility text on purpose*/}
+                  <IconButton
+                    size="small"
+                    aria-label="עריכת משתמש"
+                    onClick={() => handleOpenEdit(u)}
+                  >
                     <EditRoundedIcon />
                   </IconButton>
                 </TableCell>
@@ -256,9 +236,7 @@ export default function UsersPage() {
 
       {/* Dialog: Create/Edit User */}
       <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle>
-          {mode === "create" ? "הוספת משתמש" : "עריכת משתמש"}
-        </DialogTitle>
+        <DialogTitle>{mode === "create" ? "הוספת משתמש" : "עריכת משתמש"}</DialogTitle>
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent>
             <Stack spacing={2}>
@@ -268,11 +246,7 @@ export default function UsersPage() {
                 value={form.id}
                 onChange={handleChange("id")}
                 sx={rtlFieldSx}
-                inputProps={{
-                  inputMode: "numeric",
-                  pattern: "\\d{9}",
-                  maxLength: 9,
-                }}
+                inputProps={{ inputMode: "numeric", pattern: "\\d{9}", maxLength: 9 }}
                 error={!!errors.id}
                 helperText={errors.id || "ספרות בלבד "}
               />
@@ -301,11 +275,7 @@ export default function UsersPage() {
                 value={form.phone}
                 onChange={handleChange("phone")}
                 sx={rtlFieldSx}
-                inputProps={{
-                  inputMode: "numeric",
-                  pattern: "\\d{10}",
-                  maxLength: 10,
-                }}
+                inputProps={{ inputMode: "numeric", pattern: "\\d{10}", maxLength: 10 }}
                 error={!!errors.phone}
               />
               <TextField
@@ -314,7 +284,7 @@ export default function UsersPage() {
                 label="תפקיד"
                 value={form.role}
                 onChange={(e) =>
-                  setForm((prev) => ({
+                  setForm((prev: User) => ({
                     ...prev,
                     role: e.target.value as UserRole,
                   }))
@@ -329,7 +299,6 @@ export default function UsersPage() {
             </Stack>
           </DialogContent>
 
-          {/* כפתורים גדולים וממורכזים בלבד */}
           <DialogActions sx={{ px: 3, pb: 3 }}>
             <Stack
               direction="row"
@@ -344,7 +313,7 @@ export default function UsersPage() {
                   color="error"
                   size="large"
                   onClick={handleDeleteCurrent}
-                  sx={{ minWidth: 180, py: 1.1, borderRadius: 2 }}
+                  sx={{ minWidth: BTN_MIN_WIDTH, py: 1.1, borderRadius: 2 }}
                 >
                   מחק
                 </Button>
@@ -353,7 +322,7 @@ export default function UsersPage() {
                 variant="contained"
                 size="large"
                 type="submit"
-                sx={{ minWidth: 180, py: 1.1, borderRadius: 2 }}
+                sx={{ minWidth: BTN_MIN_WIDTH, py: 1.1, borderRadius: 2 }}
               >
                 שמור
               </Button>
@@ -362,10 +331,9 @@ export default function UsersPage() {
         </Box>
       </Dialog>
 
-      {/* ✅ הודעת הצלחה */}
       <Snackbar
         open={!!successMsg}
-        autoHideDuration={5000}
+        autoHideDuration={SNACKBAR_DURATION_MS}
         onClose={() => setSuccessMsg("")}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"; //  useMemo לא בשימוש
+import { useState } from "react";
 import {
   TextField,
   Button,
@@ -76,8 +76,7 @@ function isValidPhone(raw: string) {
   return PHONE_DIGITS.test(raw);
 }
 
-//  קומפוננטה לא ב-PascalCase
-export default function newticket() {
+export default function NewTicket() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormData>({
@@ -108,7 +107,6 @@ export default function newticket() {
   function validate(): boolean {
     const e: Record<string, string> = {};
 
-    // ולידציה
     if (!formData.department) e.department = "יש לבחור מחלקה.";
     const id = formData.studentId.trim();
     if (!id) e.studentId = "יש להזין תעודת זהות.";
@@ -126,12 +124,11 @@ export default function newticket() {
     return Object.keys(e).length === 0;
   }
 
-  //  שם פונקציה לא ב-camelCase
-  const Handle_submit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validate()) return;
-    // חישוב מזהה חדש ושמירה
+
     const existing: Ticket[] = loadTickets();
     const nextId =
       existing.length > 0
@@ -146,20 +143,17 @@ export default function newticket() {
       phone: formData.phone.trim() || undefined,
       date: formatDate(new Date()),
       status: "פתוח",
-      priority: "רגילה", // ברירת מחדל – הסטודנט לא בוחר עדיפות
+      priority: "רגילה",
       department: formData.department,
       attachments,
     };
 
     addTicket(newTicket);
-    // 🔹 ניווט למסך אישור עם ה־ID החדש
     navigate(`/submitted/${newTicket.id}`);
   };
 
   return (
-    //  לא סמנטי (Box מרנדר div גנרי; בגרסה המתוקנת יהיה component="main")
     <Box sx={{ maxWidth: 760, mx: "auto", p: 2 }} dir="rtl">
-      {/* קופסת התוכן עם מסגרת כחולה דקה */}
       <Box
         sx={{
           border: "2px solid",
@@ -168,7 +162,6 @@ export default function newticket() {
           p: 3,
           bgcolor: "background.paper",
         }}
-        className="NewTicketForm" //  CSS לא ב-lowercase-hyphen
       >
         <Typography variant="h5" gutterBottom>
           פנייה חדשה
@@ -177,8 +170,7 @@ export default function newticket() {
           מלא את הפרטים ונחזור אליך בהקדם.
         </Typography>
 
-        {/*  שימוש בשם פונקציה לא תקין */}
-        <Box component="form" onSubmit={Handle_submit}>
+        <Box component="form" onSubmit={handleSubmit}>
           {/* מחלקה */}
           <TextField
             select
@@ -209,7 +201,7 @@ export default function newticket() {
             name="studentId"
             value={formData.studentId}
             onChange={(e) => {
-              const val = e.target.value.replace(/\D/g, "").slice(0, 9); // ספרות בלבד, אורך 9
+              const val = e.target.value.replace(/\D/g, "").slice(0, 9);
               setFormData((prev) => ({ ...prev, studentId: val }));
               setErrors((prev) => ({ ...prev, studentId: "" }));
             }}
@@ -231,7 +223,7 @@ export default function newticket() {
             name="phone"
             value={formData.phone}
             onChange={(e) => {
-              const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10); // ספרות בלבד, עד 10
+              const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
               setFormData((prev) => ({ ...prev, phone: digitsOnly }));
               setErrors((prev) => ({ ...prev, phone: "" }));
             }}

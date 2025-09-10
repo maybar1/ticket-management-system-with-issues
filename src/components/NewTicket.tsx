@@ -1,5 +1,4 @@
-// src/components/NewTicket.tsx
-import { useState } from "react";
+import { useState, useMemo } from "react"; //  useMemo לא בשימוש
 import {
   TextField,
   Button,
@@ -77,7 +76,8 @@ function isValidPhone(raw: string) {
   return PHONE_DIGITS.test(raw);
 }
 
-export default function NewTicket() {
+//  קומפוננטה לא ב-PascalCase
+export default function newticket() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormData>({
@@ -126,7 +126,8 @@ export default function NewTicket() {
     return Object.keys(e).length === 0;
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //  שם פונקציה לא ב-camelCase
+  const Handle_submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validate()) return;
@@ -156,6 +157,7 @@ export default function NewTicket() {
   };
 
   return (
+    //  לא סמנטי (Box מרנדר div גנרי; בגרסה המתוקנת יהיה component="main")
     <Box sx={{ maxWidth: 760, mx: "auto", p: 2 }} dir="rtl">
       {/* קופסת התוכן עם מסגרת כחולה דקה */}
       <Box
@@ -166,6 +168,7 @@ export default function NewTicket() {
           p: 3,
           bgcolor: "background.paper",
         }}
+        className="NewTicketForm" //  CSS לא ב-lowercase-hyphen
       >
         <Typography variant="h5" gutterBottom>
           פנייה חדשה
@@ -174,7 +177,8 @@ export default function NewTicket() {
           מלא את הפרטים ונחזור אליך בהקדם.
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit}>
+        {/*  שימוש בשם פונקציה לא תקין */}
+        <Box component="form" onSubmit={Handle_submit}>
           {/* מחלקה */}
           <TextField
             select

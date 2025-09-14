@@ -27,10 +27,20 @@ const LS_USERS_KEY = "users:v1";
 const SNACKBAR_DURATION_MS = 5000;
 const BTN_MIN_WIDTH = 180;
 
+const RTL_LABEL_RIGHT_PX = 14;
+const ID_MAX_LEN = 9;
+const PHONE_MAX_LEN = 10;
+const ICON_COL_WIDTH = 48;
+const ID_PATTERN = `\\d{${ID_MAX_LEN}}`;
+const PHONE_PATTERN = `\\d{${PHONE_MAX_LEN}}`;
+const EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i;
+const ID_REGEX = new RegExp(`^\\d{${ID_MAX_LEN}}$`);
+const PHONE_REGEX = new RegExp(`^\\d{${PHONE_MAX_LEN}}$`);
+
 const rtlFieldSx = {
   "& .MuiInputBase-input": { textAlign: "right" },
   "& .MuiInputLabel-root": {
-    right: 14,
+    right: RTL_LABEL_RIGHT_PX,
     left: "auto",
     transformOrigin: "top right",
   },
@@ -55,16 +65,19 @@ export default function UsersPage() {
   const [q, setQ] = useState("");
 
   const filteredRows = useMemo(() => {
-    const norm = (s: string) => s.toLowerCase(); // טיפוס מדויק
-    const qn = norm(String(q));
+    const norm = (s: unknown) => String(s ?? "").toLowerCase();
+    const qn = norm(q);
     return rows.filter(
-      (u) => norm(String(u.id)).includes(qn) || norm(u.name).includes(qn)
+      (u) => norm(u.id).includes(qn) || norm(u.name).includes(qn)
     );
   }, [rows, q]);
 
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
-  const originalRef = useRef<{ id: string; email: string }>({ id: "", email: "" });
+  const originalRef = useRef<{ id: string; email: string }>({
+    id: "",
+    email: "",
+  });
 
   const [form, setForm] = useState<User>({
     id: "",
@@ -76,7 +89,8 @@ export default function UsersPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMsg, setSuccessMsg] = useState("");
 
-  const handleOpenCreate = () => { // camelCase תקין
+  const handleOpenCreate = () => {
+    // camelCase תקין
     setMode("create");
     setForm({ id: "", name: "", email: "", phone: "", role: "student" });
     originalRef.current = { id: "", email: "" };
@@ -98,24 +112,24 @@ export default function UsersPage() {
     (field: keyof User) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       let value = e.target.value;
-      if (field === "id") value = value.replace(/\D/g, "").slice(0, 9);
-      if (field === "phone") value = value.replace(/\D/g, "").slice(0, 10);
+      if (field === "id") value = value.replace(/\D/g, "").slice(0, ID_MAX_LEN);
+      if (field === "phone")
+        value = value.replace(/\D/g, "").slice(0, PHONE_MAX_LEN);
       setForm((prev: User) => ({ ...prev, [field]: value }));
       setErrors((prev: Record<string, string>) => ({ ...prev, [field]: "" }));
     };
-
-  const EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i;
-  const ID_REGEX = /^\d{9}$/;
-  const PHONE_REGEX = /^\d{10}$/;
 
   function validate(): boolean {
     const e: Record<string, string> = {};
 
     if (!form.id.trim()) e.id = "יש להזין תעודת זהות.";
-    else if (!ID_REGEX.test(form.id)) e.id = "תעודת זהות חייבת להכיל בדיוק 9 ספרות.";
+    else if (!ID_REGEX.test(form.id))
+      e.id = "תעודת זהות חייבת להכיל בדיוק 9 ספרות.";
     else if (
       rows.some(
-        (u) => String(u.id) === form.id && (mode === "create" || u.id !== originalRef.current.id)
+        (u) =>
+          String(u.id) === form.id &&
+          (mode === "create" || u.id !== originalRef.current.id)
       )
     )
       e.id = "תעודת זהות כבר קיימת.";
@@ -125,18 +139,20 @@ export default function UsersPage() {
 
     const email = form.email.trim().toLowerCase();
     if (!email) e.email = "יש להזין אימייל.";
-    else if (!EMAIL_REGEX.test(email)) e.email = "must end with 365@ono.ac.il";
+    else if (!EMAIL_REGEX.test(email)) e.email = "must end with @365.ono.ac.il";
     else if (
       rows.some(
         (u) =>
           u.email.toLowerCase() === email &&
-          (mode === "create" || u.email.toLowerCase() !== originalRef.current.email)
+          (mode === "create" ||
+            u.email.toLowerCase() !== originalRef.current.email)
       )
     )
       e.email = "האימייל כבר קיים.";
 
     if (!form.phone.trim()) e.phone = "יש להזין מספר טלפון.";
-    else if (!PHONE_REGEX.test(form.phone)) e.phone = "מספר טלפון חייב להכיל בדיוק 10 ספרות.";
+    else if (!PHONE_REGEX.test(form.phone))
+      e.phone = "מספר טלפון חייב להכיל בדיוק 10 ספרות.";
 
     if (!form.role) e.role = "יש לבחור תפקיד.";
 
@@ -173,7 +189,9 @@ export default function UsersPage() {
 
   function handleDeleteCurrent() {
     if (!confirm(`למחוק את ${form.name}?`)) return;
-    setRows((prev: User[]) => prev.filter((x: User) => x.id !== originalRef.current.id));
+    setRows((prev: User[]) =>
+      prev.filter((x: User) => x.id !== originalRef.current.id)
+    );
     setSuccessMsg("🗑️ המשתמש נמחק בהצלחה!");
     setOpen(false);
   }
@@ -208,7 +226,9 @@ export default function UsersPage() {
               <TableCell align="right">אימייל</TableCell>
               <TableCell align="right">טלפון</TableCell>
               <TableCell align="right">תפקיד</TableCell>
-              <TableCell align="left" width={48}>{/* אייקון בלבד */}</TableCell>
+              <TableCell align="left" width={ICON_COL_WIDTH}>
+                {/* אייקון בלבד */}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -218,7 +238,9 @@ export default function UsersPage() {
                 <TableCell align="right">{u.name}</TableCell>
                 <TableCell align="right">{u.email}</TableCell>
                 <TableCell align="right">{u.phone}</TableCell>
-                <TableCell align="right">{u.role === "team" ? "מנהל" : "סטודנט"}</TableCell>
+                <TableCell align="right">
+                  {u.role === "team" ? "מנהל" : "סטודנט"}
+                </TableCell>
                 <TableCell align="left">
                   <IconButton
                     size="small"
@@ -236,7 +258,9 @@ export default function UsersPage() {
 
       {/* Dialog: Create/Edit User */}
       <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle>{mode === "create" ? "הוספת משתמש" : "עריכת משתמש"}</DialogTitle>
+        <DialogTitle>
+          {mode === "create" ? "הוספת משתמש" : "עריכת משתמש"}
+        </DialogTitle>
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent>
             <Stack spacing={2}>
@@ -246,9 +270,13 @@ export default function UsersPage() {
                 value={form.id}
                 onChange={handleChange("id")}
                 sx={rtlFieldSx}
-                inputProps={{ inputMode: "numeric", pattern: "\\d{9}", maxLength: 9 }}
+                inputProps={{
+                  inputMode: "numeric",
+                  pattern: ID_PATTERN,
+                  maxLength: ID_MAX_LEN,
+                }}
                 error={!!errors.id}
-                helperText={errors.id || "ספרות בלבד "}
+                helperText={errors.id || "ספרות בלבד"}
               />
               <TextField
                 required
@@ -275,7 +303,11 @@ export default function UsersPage() {
                 value={form.phone}
                 onChange={handleChange("phone")}
                 sx={rtlFieldSx}
-                inputProps={{ inputMode: "numeric", pattern: "\\d{10}", maxLength: 10 }}
+                inputProps={{
+                  inputMode: "numeric",
+                  pattern: PHONE_PATTERN,
+                  maxLength: PHONE_MAX_LEN,
+                }}
                 error={!!errors.phone}
               />
               <TextField

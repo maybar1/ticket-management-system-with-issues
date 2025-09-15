@@ -74,10 +74,10 @@ export default function users_page() {
     phone: "",
     role: "student",
   });
-  const [errors, setErrors] = useState<any>({}); // ❌ any מכוון
+  const [errors, setErrors] = useState<any>({}); // any מכוון
   const [successMsg, setSuccessMsg] = useState("");
 
-  const handle_open_create = () => { // ❌ snake_case
+  const handle_open_create = () => { //snake_case
     setMode("create");
     setForm({ id: "", name: "", email: "", phone: "", role: "student" });
     originalRef.current = { id: "", email: "" };

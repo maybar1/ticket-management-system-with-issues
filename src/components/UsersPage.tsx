@@ -20,32 +20,45 @@ import {
   MenuItem,
   Snackbar,
   Alert,
-
 } from "@mui/material";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"; // unused on purpose
+// (הוסר הייבוא הלא-בשימוש)
 import { users as seedUsers, type User, type UserRole } from "../data/user";
 
 const LS_USERS_KEY = "users:v1";
+const SNACKBAR_DURATION_MS = 5000;
+const BTN_MIN_WIDTH = 180;
 
-// RTL בגודל רגיל (כמו קודם)
+const RTL_LABEL_RIGHT_PX = 14;
+const ID_MAX_LEN = 9;
+const PHONE_MAX_LEN = 10;
+const ICON_COL_WIDTH = 48;
+const ID_PATTERN = `\\d{${ID_MAX_LEN}}`;
+const PHONE_PATTERN = `\\d{${PHONE_MAX_LEN}}`;
+
+const EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i;
+const ID_REGEX = new RegExp(`^\\d{${ID_MAX_LEN}}$`);
+const PHONE_REGEX = new RegExp(`^\\d{${PHONE_MAX_LEN}}$`);
+
 const rtlFieldSx = {
   "& .MuiInputBase-input": { textAlign: "right" },
   "& .MuiInputLabel-root": {
-    right: 14,
+    right: RTL_LABEL_RIGHT_PX,
     left: "auto",
     transformOrigin: "top right",
   },
 };
 
-export default function users_page() {
+export default function UsersPage() {
   const [rows, setRows] = useState<User[]>(() => {
     const raw = localStorage.getItem(LS_USERS_KEY);
     if (raw) {
       try {
         const arr = JSON.parse(raw);
         if (Array.isArray(arr)) return arr as User[];
-      } catch {}
+      } catch (err) {
+        // אופציונלי: console.error("Failed to parse users from LS", err);
+      }
     }
     return seedUsers;
   });
@@ -54,18 +67,14 @@ export default function users_page() {
     localStorage.setItem(LS_USERS_KEY, JSON.stringify(rows));
   }, [rows]);
 
-  // ------- Search (ID or Name only) -------
   const [q, setQ] = useState("");
 
   const filteredRows = useMemo(() => {
-    const norm = (s: any) => String(s ?? "").toLowerCase(); // ❌ any בפונקציה
+    const norm = (s: unknown) => String(s ?? "").toLowerCase();
     const qn = norm(q);
-    return rows.filter(
-      (u) => norm(u.id).includes(qn) || norm(u.name).includes(qn)
-    );
+    return rows.filter((u) => norm(u.id).includes(qn) || norm(u.name).includes(qn));
   }, [rows, q]);
 
-  // ------- Dialog (create/edit) -------
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
   const originalRef = useRef<{ id: string; email: string }>({ id: "", email: "" });
@@ -77,7 +86,7 @@ export default function users_page() {
     phone: "",
     role: "student",
   });
-  const [errors, setErrors] = useState<any>({}); // ❌ any מכוון
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMsg, setSuccessMsg] = useState("");
 
   const handleOpenCreate = () => {
@@ -102,17 +111,13 @@ export default function users_page() {
     (field: keyof User) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       let value = e.target.value;
-      if (field === "id") value = value.replace(/\D/g, "").slice(0, 9);
-      if (field === "phone") value = value.replace(/\D/g, "").slice(0, 10);
-      setForm((prev: any) => ({ ...prev, [field]: value }));   // ❌ any
-      setErrors((prev: any) => ({ ...prev, [field]: "" }));     // ❌ any
+      if (field === "id") value = value.replace(/\D/g, "").slice(0, ID_MAX_LEN);
+      if (field === "phone") value = value.replace(/\D/g, "").slice(0, PHONE_MAX_LEN);
+      setForm((prev: User) => ({ ...prev, [field]: value }));
+      setErrors((prev: Record<string, string>) => ({ ...prev, [field]: "" }));
     };
 
-  let EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i; // ❌ let לקבועים
-  let ID_REGEX = /^\d{9}$/;                        // ❌ let
-  let PHONE_REGEX = /^\d{10}$/;                    // ❌ let
-
-  function validate(): boolean {
+  const validate = (): boolean => {
     const e: Record<string, string> = {};
 
     if (!form.id.trim()) e.id = "יש להזין תעודת זהות.";
@@ -129,7 +134,7 @@ export default function users_page() {
 
     const email = form.email.trim().toLowerCase();
     if (!email) e.email = "יש להזין אימייל.";
-    else if (!EMAIL_REGEX.test(email)) e.email = "must end with 365@ono.ac.il";
+    else if (!EMAIL_REGEX.test(email)) e.email = "must end with @365.ono.ac.il";
     else if (
       rows.some(
         (u) =>
@@ -146,9 +151,9 @@ export default function users_page() {
 
     setErrors(e);
     return Object.keys(e).length === 0;
-  }
+  };
 
-  function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -161,35 +166,29 @@ export default function users_page() {
     };
 
     if (mode === "create") {
-      setRows((prev: any[]) => [sanitized, ...prev]); // ❌ any[]
+      setRows((prev: User[]) => [sanitized, ...prev]);
       setSuccessMsg("✅ משתמש נוסף בהצלחה!");
     } else {
-      setRows((prev: any[]) =>
-        prev.map((u: any) => // ❌ any
-          u.id === originalRef.current.id ? { ...u, ...sanitized } : u
-        )
+      setRows((prev: User[]) =>
+        prev.map((u: User) => (u.id === originalRef.current.id ? { ...u, ...sanitized } : u))
       );
       setSuccessMsg("✅ פרטי המשתמש עודכנו בהצלחה!");
     }
 
     setOpen(false);
-  }
+  };
 
-  function handleDeleteCurrent() {
+  const handleDeleteCurrent = () => {
     if (!confirm(`למחוק את ${form.name}?`)) return;
-    setRows((prev: any[]) => prev.filter((x: any) => x.id !== originalRef.current.id)); // ❌ any
+    setRows((prev: User[]) => prev.filter((x: User) => x.id !== originalRef.current.id));
     setSuccessMsg("🗑️ המשתמש נמחק בהצלחה!");
     setOpen(false);
-  }
+  };
 
   return (
     <Box sx={{ p: 2 }} dir="rtl">
       <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
-        <Typography
-          variant="h5"
-          sx={{ flexGrow: 1 }}
-          style={{ letterSpacing: 0.25 }}  //  magic number + inline style
-        >
+        <Typography variant="h5" sx={{ flexGrow: 1 }}>
           משתמשים
         </Typography>
         <Button variant="contained" onClick={handleOpenCreate}>
@@ -216,20 +215,25 @@ export default function users_page() {
               <TableCell align="right">אימייל</TableCell>
               <TableCell align="right">טלפון</TableCell>
               <TableCell align="right">תפקיד</TableCell>
-              <TableCell align="left" width={48}>{/* אייקון בלבד */}</TableCell>
+              <TableCell align="left" width={ICON_COL_WIDTH}>
+                {/* אייקון בלבד */}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((u: any, i: any) => ( // ❌ key לפי אינדקס + any
-              <TableRow key={i} hover>
+            {filteredRows.map((u: User) => (
+              <TableRow key={u.id} hover>
                 <TableCell align="right">{u.id}</TableCell>
                 <TableCell align="right">{u.name}</TableCell>
                 <TableCell align="right">{u.email}</TableCell>
                 <TableCell align="right">{u.phone}</TableCell>
                 <TableCell align="right">{u.role === "team" ? "מנהל" : "סטודנט"}</TableCell>
                 <TableCell align="left">
-                  <IconButton size="small" onClick={() => handleOpenEdit(u)}>
-                    {/* ❌ בלי aria-label לכפתור אייקון */}
+                  <IconButton
+                    size="small"
+                    aria-label="עריכת משתמש"
+                    onClick={() => handleOpenEdit(u)}
+                  >
                     <EditRoundedIcon />
                   </IconButton>
                 </TableCell>
@@ -251,9 +255,13 @@ export default function users_page() {
                 value={form.id}
                 onChange={handleChange("id")}
                 sx={rtlFieldSx}
-                inputProps={{ inputMode: "numeric", pattern: "\\d{9}", maxLength: 9 }}
+                inputProps={{
+                  inputMode: "numeric",
+                  pattern: ID_PATTERN,
+                  maxLength: ID_MAX_LEN,
+                }}
                 error={!!errors.id}
-                helperText={errors.id || "ספרות בלבד "}
+                helperText={errors.id || "ספרות בלבד"}
               />
               <TextField
                 required
@@ -280,7 +288,11 @@ export default function users_page() {
                 value={form.phone}
                 onChange={handleChange("phone")}
                 sx={rtlFieldSx}
-                inputProps={{ inputMode: "numeric", pattern: "\\d{10}", maxLength: 10 }}
+                inputProps={{
+                  inputMode: "numeric",
+                  pattern: PHONE_PATTERN,
+                  maxLength: PHONE_MAX_LEN,
+                }}
                 error={!!errors.phone}
               />
               <TextField
@@ -289,7 +301,7 @@ export default function users_page() {
                 label="תפקיד"
                 value={form.role}
                 onChange={(e) =>
-                  setForm((prev: any) => ({ // ❌ any
+                  setForm((prev: User) => ({
                     ...prev,
                     role: e.target.value as UserRole,
                   }))
@@ -304,7 +316,6 @@ export default function users_page() {
             </Stack>
           </DialogContent>
 
-          {/* כפתורים גדולים וממורכזים בלבד */}
           <DialogActions sx={{ px: 3, pb: 3 }}>
             <Stack
               direction="row"
@@ -319,7 +330,7 @@ export default function users_page() {
                   color="error"
                   size="large"
                   onClick={handleDeleteCurrent}
-                  sx={{ minWidth: 180, py: 1.1, borderRadius: 2 }}
+                  sx={{ minWidth: BTN_MIN_WIDTH, py: 1.1, borderRadius: 2 }}
                 >
                   מחק
                 </Button>
@@ -328,7 +339,7 @@ export default function users_page() {
                 variant="contained"
                 size="large"
                 type="submit"
-                sx={{ minWidth: 180, py: 1.1, borderRadius: 2 }}
+                sx={{ minWidth: BTN_MIN_WIDTH, py: 1.1, borderRadius: 2 }}
               >
                 שמור
               </Button>
@@ -337,10 +348,9 @@ export default function users_page() {
         </Box>
       </Dialog>
 
-      {/* ✅ הודעת הצלחה */}
       <Snackbar
         open={!!successMsg}
-        autoHideDuration={5000}
+        autoHideDuration={SNACKBAR_DURATION_MS}
         onClose={() => setSuccessMsg("")}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >

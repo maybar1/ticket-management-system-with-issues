@@ -80,7 +80,7 @@ export default function users_page() {
   const [errors, setErrors] = useState<any>({}); // ❌ any מכוון
   const [successMsg, setSuccessMsg] = useState("");
 
-  const handle_open_create = () => { // ❌ snake_case
+  const handleOpenCreate = () => {
     setMode("create");
     setForm({ id: "", name: "", email: "", phone: "", role: "student" });
     originalRef.current = { id: "", email: "" };
@@ -192,7 +192,7 @@ export default function users_page() {
         >
           משתמשים
         </Typography>
-        <Button variant="contained" onClick={handle_open_create}> {/* snake_case */}
+        <Button variant="contained" onClick={handleOpenCreate}>
           הוספת משתמש
         </Button>
       </Box>

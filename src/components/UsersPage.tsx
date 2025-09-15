@@ -55,7 +55,7 @@ export default function users_page() {
   const [q, setQ] = useState("");
 
   const filteredRows = useMemo(() => {
-    const norm = (s: any) => String(s ?? "").toLowerCase(); // ❌ any בפונקציה
+    const norm = (s: any) => String(s ?? "").toLowerCase(); //  any בפונקציה
     const qn = norm(q);
     return rows.filter(
       (u) => norm(u.id).includes(qn) || norm(u.name).includes(qn)
@@ -101,8 +101,8 @@ export default function users_page() {
       let value = e.target.value;
       if (field === "id") value = value.replace(/\D/g, "").slice(0, 9);
       if (field === "phone") value = value.replace(/\D/g, "").slice(0, 10);
-      setForm((prev: any) => ({ ...prev, [field]: value }));   // ❌ any
-      setErrors((prev: any) => ({ ...prev, [field]: "" }));     // ❌ any
+      setForm((prev: any) => ({ ...prev, [field]: value }));   //  any
+      setErrors((prev: any) => ({ ...prev, [field]: "" }));     //  any
     };
 
   let EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i; // ❌ let לקבועים
@@ -158,11 +158,11 @@ export default function users_page() {
     };
 
     if (mode === "create") {
-      setRows((prev: any[]) => [sanitized, ...prev]); // ❌ any[]
+      setRows((prev: any[]) => [sanitized, ...prev]); //  any[]
       setSuccessMsg("✅ משתמש נוסף בהצלחה!");
     } else {
       setRows((prev: any[]) =>
-        prev.map((u: any) => // ❌ any
+        prev.map((u: any) => //  any
           u.id === originalRef.current.id ? { ...u, ...sanitized } : u
         )
       );
@@ -174,7 +174,7 @@ export default function users_page() {
 
   function handleDeleteCurrent() {
     if (!confirm(`למחוק את ${form.name}?`)) return;
-    setRows((prev: any[]) => prev.filter((x: any) => x.id !== originalRef.current.id)); // ❌ any
+    setRows((prev: any[]) => prev.filter((x: any) => x.id !== originalRef.current.id)); //  any
     setSuccessMsg("🗑️ המשתמש נמחק בהצלחה!");
     setOpen(false);
   }
@@ -185,11 +185,11 @@ export default function users_page() {
         <Typography
           variant="h5"
           sx={{ flexGrow: 1 }}
-          style={{ letterSpacing: 0.25 }}  // ❌ magic number + inline style
+          style={{ letterSpacing: 0.25 }}  //  magic number + inline style
         >
           משתמשים
         </Typography>
-        <Button variant="contained" onClick={handle_open_create}> {/* ❌ snake_case */}
+        <Button variant="contained" onClick={handle_open_create}> {/*  snake_case */}
           הוספת משתמש
         </Button>
       </Box>
@@ -217,7 +217,7 @@ export default function users_page() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((u: any, i: any) => ( // ❌ key לפי אינדקס + any
+            {filteredRows.map((u: any, i: any) => ( //  key לפי אינדקס + any
               <TableRow key={i} hover>
                 <TableCell align="right">{u.id}</TableCell>
                 <TableCell align="right">{u.name}</TableCell>
@@ -226,7 +226,7 @@ export default function users_page() {
                 <TableCell align="right">{u.role === "team" ? "מנהל" : "סטודנט"}</TableCell>
                 <TableCell align="left">
                   <IconButton size="small" onClick={() => handleOpenEdit(u)}>
-                    {/* ❌ בלי aria-label לכפתור אייקון */}
+                    {/*  בלי aria-label לכפתור אייקון */}
                     <EditRoundedIcon />
                   </IconButton>
                 </TableCell>

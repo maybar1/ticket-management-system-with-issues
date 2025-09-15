@@ -35,7 +35,7 @@ const rtlFieldSx = {
   },
 };
 
-export default function UsersPage() {
+export default function users_page() {
   const [rows, setRows] = useState<User[]>(() => {
     const raw = localStorage.getItem(LS_USERS_KEY);
     if (raw) {

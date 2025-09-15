@@ -105,9 +105,9 @@ export default function users_page() {
       setErrors((prev: any) => ({ ...prev, [field]: "" }));     //  any
     };
 
-  let EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i; // ❌ let לקבועים
-  let ID_REGEX = /^\d{9}$/;                        // ❌ let
-  let PHONE_REGEX = /^\d{10}$/;                    // ❌ let
+  let EMAIL_REGEX = /^[^\s@]+@365\.ono\.ac\.il$/i; //  let לקבועים
+  let ID_REGEX = /^\d{9}$/;                        //  let
+  let PHONE_REGEX = /^\d{10}$/;                    //  let
 
   function validate(): boolean {
     const e: Record<string, string> = {};
